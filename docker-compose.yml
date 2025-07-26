@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  user-service:
+    build: ./user-service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    environment:
+      - FLASK_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=users
+      - DB_USER=postgres
+      - DB_PASS=postgres
+
+  data-service:
+    build: ./data-service
+    ports:
+      - "5001:5000"
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - FLASK_ENV=development
+      - REDIS_HOST=redis
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=users
+      - DB_USER=postgres
+      - DB_PASS=postgres
+
+  postgres:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: users
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
+
